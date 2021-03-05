@@ -1,3 +1,12 @@
+""" Program creates a "Pomodoro Timer" app that iterates through 4 work sessions of 25 minutes with 5 minutes breaks 
+in between, with the 4th session being followed by a 20 minute long break. Monitors progress with check marks on screen. 
+
+You can reset the timer to a specific interval, reset the current session to 00:00 without losing progress, 
+or reset the app without closing it completely. Notifies user with a flashing popup box (and sound when run on a 
+machine) when each session ends! """
+
+# Todo: Disable start button while counter is not at 00:00
+
 from tkinter import *
 from tkinter import messagebox
 import math
@@ -8,26 +17,29 @@ RED = "#e7305b"
 GREEN = "#9bdeac"
 YELLOW = "#f7f5dd"
 FONT_NAME = "Helvetica"
-WORK_MIN = 25  # Minutes
-SHORT_BREAK_MIN = 5  # Minutes
-LONG_BREAK_MIN = 20  # Minutes
-PAUSE = 60  # Seconds
+# WORK_MIN = 25  # Minutes
+# SHORT_BREAK_MIN = 5  # Minutes
+# LONG_BREAK_MIN = 20  # Minutes
+# PAUSE = 60  # Seconds, set for the time.sleep operation (disabled)
 
-# # Test Values
-# WORK_MIN = 2/60  # Minutes
-# SHORT_BREAK_MIN = 5/60  # Minutes
-# LONG_BREAK_MIN = 20/60  # Minutes
-# PAUSE = 3  # Seconds
+# Test values to replace normal usage values. Uncomment and comment out the constants above.
+WORK_MIN = 2 / 60  # Minutes
+SHORT_BREAK_MIN = 5 / 60  # Minutes
+LONG_BREAK_MIN = 20 / 60  # Minutes
+PAUSE = 3  # Seconds
 
 reps = 0
-reset_already = True
+reset_already = False
+app_started = False
 timer = None
 
 
 def reset_session():
+    """Reverts session to '00:00' while maintaining app progress (check marks). Pressing 'Start' button begins session
+    over with original values."""
     global reps, reset_already
-    if reset_already:
-        pass   
+    if reset_already:  # Prevents reverting to previous task
+        pass
     else:
         window.after_cancel(timer)
         canvas.itemconfig(timer_text, text="00:00")
@@ -37,6 +49,8 @@ def reset_session():
 
 
 def reset():
+    """Reverts app to original status, removing any progress (check marks) and resetting the apps details. Timer set to
+    '00:00', pressing 'Start' begins the initial work session as when the app is first launched."""
     window.after_cancel(timer)
     canvas.itemconfig(timer_text, text="00:00")
     status.config(text='Get started?')
@@ -46,17 +60,24 @@ def reset():
 
 
 def start_timer():
-    global reps
-    global reset_already
+    """Prepares timer countdown by calculating session lengths & values, as well as what the current session is (work,
+    short break, long break). Displays session status, then calls the 'countdown' function to begin timer operation."""
+    global reps, reset_already, app_started
 
-    reset_session()
+    # if app_started:
+    #     reset_session()
+    #     reset_already = False
+    # else:
+    #     app_started = True
+
     reset_already = False
+
     reps += 1
     work_sec = WORK_MIN * 60
     short_break_sec = SHORT_BREAK_MIN * 60
     long_break_sec = LONG_BREAK_MIN * 60
 
-    # print(reps)
+    print(reps)
 
     if reps % 8 == 0:
         countdown(long_break_sec)
@@ -70,6 +91,9 @@ def start_timer():
 
 
 def restart_timer():
+    """Restarts timer in the same session at on user specified length from the entry field, currently in seconds.
+    Relies on 'reset_session' function to cancel timer operation and then calls 'countdown' function to begin timer
+    with specified length."""
     global reps, reset_already
     reset_session()
     reset_already = False
@@ -83,6 +107,10 @@ def restart_timer():
 
 # ---------------------------- COUNTDOWN MECHANISM ------------------------------- #
 def countdown(count):
+    """Operates timer countdown and time remaining display. Prompts user with a messagebox when each session has ended,
+    not beginning next session until the messagebox is closed.
+
+    Also responsible for tracking progress with visible check marks on screen."""
     global reps, timer
     # "00:00", where count is in seconds
     mins_left = math.floor(count / 60)
@@ -99,7 +127,7 @@ def countdown(count):
         messagebox.showinfo(title='Session Status', message='Your session has ended!')
         start_timer()
         if reps % 2 == 0 and reps > 0:  # Add a check mark at start of each break (after first)
-            checks = int(reps/2) * '✔'
+            checks = int(reps / 2) * '✔'
             check_marks.config(text=checks)
 
 
@@ -110,8 +138,7 @@ window.config(padx=100, pady=100, bg=YELLOW)
 window.minsize(width=500, height=500)
 window.title('Pomodoro Timer')
 
-
-# Create background image
+# Create background image & text object on canvas
 canvas = Canvas(width=200, height=224, bg=YELLOW, highlightthickness=0)
 tomato_img = PhotoImage(file='tomato.gif')
 canvas.create_image(100, 112, image=tomato_img)
@@ -122,7 +149,7 @@ canvas.grid(column=1, row=1)
 status = Label(text='Get Started?', font=(FONT_NAME, 36, 'bold'), bg=YELLOW, fg=RED)
 status.grid(column=1, row=0)
 
-start_button = Button(text='(Re)Start', font=(FONT_NAME, 16, 'normal'), bg=GREEN, command=start_timer)
+start_button = Button(text='Start', font=(FONT_NAME, 16, 'normal'), bg=GREEN, command=start_timer)
 start_button.grid(column=0, row=2)
 
 start_at_button = Button(text='Restart at...', font=(FONT_NAME, 16, 'normal'), bg=GREEN, command=restart_timer)
