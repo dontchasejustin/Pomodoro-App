@@ -30,7 +30,6 @@ PAUSE = 3  # Seconds
 
 reps = 0
 reset_already = False
-app_started = False
 timer = None
 
 
@@ -38,15 +37,13 @@ def reset_session():
     """Reverts session to '00:00' while maintaining app progress (check marks). Pressing 'Start' button begins session
     over with original values."""
     global reps, reset_already
-    if reset_already:  # Prevents reverting to previous task
-        pass
-    else:
+
+    if not reset_already and reps > 0:
         window.after_cancel(timer)
         canvas.itemconfig(timer_text, text="00:00")
         reset_already = True
-        if reps > 0:
-            reps -= 1
-
+        reps -= 1
+    
 
 def reset():
     """Reverts app to original status, removing any progress (check marks) and resetting the apps details. Timer set to
@@ -64,13 +61,9 @@ def start_timer():
     short break, long break). Displays session status, then calls the 'countdown' function to begin timer operation."""
     global reps, reset_already, app_started
 
-    # if app_started:
-    #     reset_session()
-    #     reset_already = False
-    # else:
-    #     app_started = True
 
-    reset_already = False
+    if reps > 1:
+        window.after_cancel(timer)
 
     reps += 1
     work_sec = WORK_MIN * 60
