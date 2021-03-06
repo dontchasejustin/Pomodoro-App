@@ -38,12 +38,15 @@ def reset_session():
     over with original values."""
     global reps, reset_already
 
-    if not reset_already and reps > 0:
+    # if not reset_already and reps > 0:
+    #     window.after_cancel(timer)
+    #     canvas.itemconfig(timer_text, text="00:00")
+    #     reset_already = True
+    #     reps -= 1
+    if reps > 0:
         window.after_cancel(timer)
-        canvas.itemconfig(timer_text, text="00:00")
-        reset_already = True
         reps -= 1
-    
+        start_timer()
 
 def reset():
     """Reverts app to original status, removing any progress (check marks) and resetting the apps details. Timer set to
